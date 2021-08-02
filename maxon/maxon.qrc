@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>image/add.png</file>
+        <file>image/agt_back.png</file>
+        <file>image/agt_forward.png</file>
+        <file>image/minus_circle_green.png</file>
+    </qresource>
+</RCC>
