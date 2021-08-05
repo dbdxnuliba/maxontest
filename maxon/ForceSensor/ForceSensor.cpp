@@ -57,7 +57,7 @@ int ForceSensor::getCalForce()
        force = MODBUS_GET_INT32_FROM_INT16(codevalue, 0);
     }
 
-    return force*10;
+    return force;
 }
 
 bool ForceSensor::disconnectForceSensor()

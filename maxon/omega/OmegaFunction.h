@@ -12,7 +12,11 @@ public:
     bool getForce(double *fx, double *fy, double *fz);
     bool getPositionAndOrientationDeg(double *px, double *py, double *pz, double *oa, double *ob, double *og, char ID = -1);
     bool getPosition(double *px, double *py, double *pz);
+    bool getPositionMilimeter(double* XmPos, double* YmPos, double* ZmPos);
+
     bool getLinearVelocity(double* px, double* py, double* pz);
+    bool getLinearVelocityMilimeter(double* XmSpeed, double* YmSpeed, double* ZmSpeed);
+
     int getButton();
     int enableForceMode();
     int disableForceMode();

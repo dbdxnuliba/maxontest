@@ -18,6 +18,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     ForceSensor/ForceSensor.cpp \
     MaxonMotor.cpp \
+    functioncustom.cpp \
     main.cpp \
     mainwindow.cpp \
     omega.cpp \
@@ -26,6 +27,7 @@ SOURCES += \
 HEADERS += \
     ForceSensor/ForceSensor.h \
     MaxonMotor.h \
+    functioncustom.h \
     mainwindow.h \
     omega.h \
     omega/OmegaFunction.h

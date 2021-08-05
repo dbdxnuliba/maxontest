@@ -29,7 +29,6 @@ public:
     double transformLineSpToRPM(double lineSp);
     void SetDirection(bool isDirection);
     double sameDirection(double input);
-    short sameDirection(short input);
     void setNodeId(int nodeid);
     bool openDevice();
     bool closeDevice();
@@ -57,10 +56,6 @@ public:
 
     double getCurrentPosition();
     double getCurrentVelocity();
-
-    bool setCurrentMode();
-    bool setCurrentMust(short currentMust);
-
     bool startMove();
     bool halt();
 

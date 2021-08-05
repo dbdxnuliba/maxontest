@@ -77,11 +77,6 @@ double MaxonMotor::sameDirection(double input){
     else return -1*input;
 }
 
-short MaxonMotor::sameDirection(short input){
-    if(this->m_isDirection) return input;
-    else return -1*input;
-}
-
 void MaxonMotor::setNodeId(int nodeid){
     this->m_usNodeId = nodeid;
 }
@@ -393,57 +388,6 @@ double MaxonMotor::getCurrentVelocity(){
         return m_lActualVelocity;
     }
     return 0;
-}
-
-bool MaxonMotor::setCurrentMode(){
-    long velocity = 0;
-    if(m_KeyHandle)
-    {
-        //Clear Error History
-        if(VCS_ClearFault(m_KeyHandle, m_usNodeId, &m_ulErrorCode))
-        {
-            //Read Operation Mode
-            if(VCS_GetOperationMode(m_KeyHandle, m_usNodeId, &m_bMode, &m_ulErrorCode))
-            {
-                //Write Profile velocity Mode
-                if(VCS_SetOperationMode(m_KeyHandle, m_usNodeId, OMD_CURRENT_MODE, &m_ulErrorCode))
-                {
-                    //Read Actual velocity
-                    if(VCS_GetVelocityIs(m_KeyHandle, m_usNodeId, &velocity, &m_ulErrorCode))
-                    {
-                        VCS_GetOperationMode(m_KeyHandle, m_usNodeId, &m_bMode, &m_ulErrorCode);
-                        qDebug()<<"operationMode "<<m_bMode;
-                        this->m_lActualVelocity = sameDirection(transformRPMToLineSp(velocity));
-                        this->parameter.mode = 3;
-                        return true;
-                    }
-                }
-            }
-        }
-        closeDevice();
-        QMessageBox::information(NULL, "Warning", "Can't clear fault!", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
-        return false;
-    }
-    else
-    {
-        qDebug()<<"Don't open device!";
-        return false;
-    }
-}
-
-bool MaxonMotor::setCurrentMust(short currentMust){
-    BOOL state = true;
-    if(!VCS_GetQuickStopState(m_KeyHandle, m_usNodeId, &state, &m_ulErrorCode)){
-        return false;
-    }
-    if(state){
-        if(!VCS_SetState(m_KeyHandle, m_usNodeId, ST_ENABLED, &m_ulErrorCode)) return false;
-    }
-    currentMust = sameDirection(currentMust);
-    if(!VCS_SetCurrentMust(m_KeyHandle, m_usNodeId, currentMust, &m_ulErrorCode))
-    {
-        return false;
-    }
 }
 
 bool MaxonMotor::startMove(){

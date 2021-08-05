@@ -4,7 +4,6 @@
 #include <QGuiApplication>
 #include <QCloseEvent>
 
-#define REFRESH_INTERVAL 0.05
 
 //! ---------------------------------------------------------------------------------------------------------------------------------------------------
 //!
@@ -12,7 +11,7 @@
 //!
 MainWindow::MainWindow(){
 
-    QScreen *screen = QGuiApplication::primaryScreen ();
+    QScreen *screen=QGuiApplication::primaryScreen ();
     QRect mm=screen->availableGeometry() ;
     int screen_width = mm.width();
     int screen_height = mm.height();
@@ -149,24 +148,6 @@ MainWindow::MainWindow(){
     this->maxon_motor1_velocitymode_stop_button->setText(QString("velocity停止"));
     this->maxon_motor1_velocitymode_stop_button->setStyleSheet("background: green");
 
-    this->maxon_motor1_currentmode_button = new QPushButton(this);
-    this->maxon_motor1_currentmode_button->setGeometry(0.5*width_scale, 55*height_scale, 7*width_scale, 2*height_scale);
-    this->maxon_motor1_currentmode_button->setText("力矩模式");
-    this->maxon_motor1_currentmode_setVelocity_label = new QLabel(this);
-    this->maxon_motor1_currentmode_setVelocity_label->setGeometry(0.5*width_scale, 58*height_scale, 4*width_scale, 2*height_scale);
-    this->maxon_motor1_currentmode_setVelocity_label->setText("设置电流参数");
-    this->maxon_motor1_currentmode_setVelocity_text = new QLineEdit(this);
-    this->maxon_motor1_currentmode_setVelocity_text->setGeometry(5*width_scale, 58*height_scale, 4*width_scale, 2*height_scale);
-    this->maxon_motor1_currentmode_setVelocity_text->setText(QString("0"));
-    this->maxon_motor1_currentmode_setVelocity_text->setAlignment(Qt::AlignCenter);
-    this->maxon_motor1_currentmode_setVelocity_text->setStyleSheet("background: green");
-    this->maxon_motor1_currentmode_unit_label = new QLabel(this);
-    this->maxon_motor1_currentmode_unit_label->setGeometry(10*width_scale, 58*height_scale, 2*width_scale, 2*height_scale);
-    this->maxon_motor1_currentmode_unit_label->setText("mA");
-    this->maxon_motor1_currentmode_startmove_button = new QPushButton(this);
-    this->maxon_motor1_currentmode_startmove_button->setGeometry(0.5*width_scale, 61*height_scale, 7*width_scale, 2*height_scale);
-    this->maxon_motor1_currentmode_startmove_button->setText(QString("设置电流"));
-    this->maxon_motor1_currentmode_startmove_button->setStyleSheet("background: green");
 
     //! motor2
     this->maxon_motor2_label = new QLabel(this);
@@ -329,7 +310,6 @@ void MainWindow::init(){
     this->enableF = false;
     this->m_isFollow = false;
     this->m_done = true;
-    this->forceSBT = 0;
 
     this->interFaceInit();
     this->connect(maxon_motor1_enable_button, SIGNAL(clicked()), this, SLOT(motor1_enable()));
@@ -337,8 +317,6 @@ void MainWindow::init(){
     this->connect(maxon_motor1_profileVelocitymode_button, SIGNAL(clicked()), this, SLOT(set_motor1_profileVelmode()));
     this->connect(maxon_motor2_velocitymode_button, SIGNAL(clicked()), this, SLOT(set_motor2_ProfileVelMode()));
     this->connect(maxon_motor1_velocitymode_button, SIGNAL(clicked()), this, SLOT(set_motor1_velocityMode()));
-    this->connect(maxon_motor1_currentmode_startmove_button, SIGNAL(clicked()), this, SLOT(motor1_currentmode_move()));
-    this->connect(maxon_motor1_currentmode_button, SIGNAL(clicked()), this, SLOT(set_motor1_currentMode()));
     this->connect(maxon_motor1_velocitymode_startmove_button, SIGNAL(clicked()), this, SLOT(motor1_velocitymode_move()));
     this->connect(maxon_motor1_velocitymode_stop_button, SIGNAL(clicked()), this, SLOT(motor1_velocitymode_halt()));
     this->connect(maxon_motor1_profileVelocitymode_startmove_button, SIGNAL(clicked()), this, SLOT(motor1_profileVelocitymode_move()));
@@ -380,7 +358,7 @@ void MainWindow::interFaceInit(){
     this->maxon_motor1_velocitymode_startmove_button->setDisabled(true);
     this->maxon_motor1_velocitymode_stop_button->setDisabled(true);
     this->paraShowTimer = new QTimer();
-    this->paraShowTimer->start(200);
+    this->paraShowTimer->start(100);
 }
 
 void MainWindow::showPara(){
@@ -394,8 +372,8 @@ void MainWindow::showPara(){
     maxon_motor2_current_position->setText(QString::number(currentPos2));
     maxon_motor2_current_velocity->setText(QString::number(currentVel2));
 
-//    int force = forceSensor->getCalForce();
-    forceSensorShowLabel->setText(QString::number(this->forceSBT));
+    int force = forceSensor->getCalForce();
+    forceSensorShowLabel->setText(QString::number(force));
 }
 
 void MainWindow::omega_show(){
@@ -450,7 +428,7 @@ bool MainWindow::motor1_enable(){
 }
 
 bool MainWindow::set_motor1_profileVelmode(){
-    if(0 != this->maxonMotor1->parameter.mode){
+    if(0 != this->maxonMotor1->m_bMode){
         if(this->maxonMotor1->setProfileVelocityMode()){
             this->maxon_motor1_profileVelocitymode_startmove_button->setDisabled(false);
             this->maxon_motor1_profileVelocitymode_stop_button->setDisabled(false);
@@ -479,7 +457,7 @@ bool MainWindow::motor1_profileVelocitymode_halt(){
 }
 
 bool MainWindow::set_motor1_profilePosmode(){
-    if(0 != this->maxonMotor1->parameter.mode){
+    if(0 != this->maxonMotor1->m_bMode){
         if(this->maxonMotor1->setProfilePositionMode()){
             this->maxon_motor1_profileVelocitymode_startmove_button->setDisabled(true);
             this->maxon_motor1_profileVelocitymode_stop_button->setDisabled(true);
@@ -513,7 +491,7 @@ void MainWindow::motor1_profilePoshalt(){
 }
 
 bool MainWindow::set_motor1_velocityMode(){
-    if(2 != this->maxonMotor1->parameter.mode){
+    if(2 != this->maxonMotor1->m_bMode){
         if(this->maxonMotor1->setVelocityMode()){
             this->maxon_motor1_profileVelocitymode_startmove_button->setDisabled(true);
             this->maxon_motor1_profileVelocitymode_stop_button->setDisabled(true);
@@ -522,7 +500,6 @@ bool MainWindow::set_motor1_velocityMode(){
             this->maxon_motor1_positionmode_halt_button->setDisabled(true);
             this->maxon_motor1_velocitymode_startmove_button->setDisabled(false);
             this->maxon_motor1_velocitymode_stop_button->setDisabled(false);
-//            this->maxon_motor1_currentmode_button->setDisabled(true);
             return true;
         }
         else{
@@ -530,33 +507,6 @@ bool MainWindow::set_motor1_velocityMode(){
         }
     }
     return true;
-}
-
-bool MainWindow::set_motor1_currentMode(){
-    if(3 != this->maxonMotor1->parameter.mode){
-        if(this->maxonMotor1->setCurrentMode()){
-            this->maxon_motor1_profileVelocitymode_startmove_button->setDisabled(true);
-            this->maxon_motor1_profileVelocitymode_stop_button->setDisabled(true);
-            this->maxon_motor1_asbpositionmode_startmove_button->setDisabled(true);
-            this->maxon_motor1_relpositionmode_startmove_button->setDisabled(true);
-            this->maxon_motor1_positionmode_halt_button->setDisabled(true);
-            this->maxon_motor1_velocitymode_startmove_button->setDisabled(false);
-            this->maxon_motor1_velocitymode_stop_button->setDisabled(false);
-//            this->maxon_motor1_currentmode_button->setDisabled(true);
-            qDebug()<<"set_motor1_currentMode";
-            return true;
-        }
-        else{
-            return false;
-        }
-    }
-    return true;
-}
-
-bool MainWindow::motor1_currentmode_move(){
-    short profileVelmodeVelocity = this->maxon_motor1_currentmode_setVelocity_text->text().toShort();
-    qDebug()<<"motor1_currentmode_move "<<profileVelmodeVelocity;
-    return this->maxonMotor1->setCurrentMust(profileVelmodeVelocity);
 }
 
 bool MainWindow::motor1_velocitymode_move(){
@@ -684,187 +634,58 @@ void MainWindow::closeEvent(QCloseEvent * e)
 void MainWindow::startGravity(){
     if(m_isFollow) return;
     if(m_done){
-        m_done = false;
         std::thread tForce(std::bind(&MainWindow::setForce, this));
         tForce.detach();
+        this->gravityButton->setDisabled(true);
     }else{
         m_done = true;
-        gravityButton->setText("gravity");
-    }
-
-    std::thread velFollow(std::bind(&MainWindow::VelFollow, this));
-    velFollow.detach();
-}
-
-void MainWindow::VelFollow(){
-    //To do
-    double Vsd = 0;
-    double Vs = 0;
-    double Current = 0;
-
-    while(true){
-
     }
 }
 
 void MainWindow::setForce(){
     gravityButton->setText("running..");
-
-//    int    done  = 0;
-    double t1,t0 = dhdGetTime ();
-
-    double p[3];
-    double v[3];
-    double s[3];
-    double g[3];
-    double f[3];
-
-    bool   oldButton  = false;
-    int    pointCount = 0;
-    double point[2][3];
-
-    const double K = 2000.0;
-    const double C = 20.0;
-
-    double additionalForce[3] = {0, 0, 0};
-    double pushForce[3] = {2};
-
-    // message
-    int major, minor, release, revision;
-    dhdGetSDKVersion (&major, &minor, &release, &revision);
-    printf ("\n");
-    printf ("Force Dimension - Segment Constraint Example %d.%d.%d.%d\n", major, minor, release, revision);
-    printf ("Copyright (C) 2001-2020 Force Dimension\n");
-    printf ("All Rights Reserved.\n\n");
-
-    // open the first available device
-    if (dhdOpen () < 0) {
-      printf ("error: cannot open device (%s)\n", dhdErrorGetLastStr());
-      dhdSleep (2.0);
-      return;
-    }
-
-    // identify device
-    printf ("%s device detected\n\n", dhdGetSystemName());
-
-    // display instructions
-    printf ("press BUTTON or 'p' to define segment points\n");
-    printf ("      'c' to clear current segment constraint\n");
-    printf ("      'q' to quit\n\n");
-
-    // enable force and button emulation, disable velocity threshold
-    dhdEnableExpertMode ();
-    dhdSetVelocityThreshold (0);
-    dhdEnableForce (DHD_ON);
-    dhdEmulateButton (DHD_ON);
-
-    // loop while the user does not press 'q'
-    while (!m_done) {
-
-        // get position and velocity
-        dhdGetPosition       (&(p[0]), &(p[1]), &(p[2]));
-        dhdGetLinearVelocity (&(v[0]), &(v[1]), &(v[2]));
-
-        // if a segment has been defined
-        if (pointCount >= 2) {
-
-            // compute projection of the device position onto segment
-            project_point_on_segment (p, point[0], point[1], s);
-
-            // compute guidance force, modeled as a spring+damper system that pulls
-            // the device towards its projection on the constraint segment
-            for (int i=0; i<3; i++) g[i] = K * (s[i] - p[i]) - C * v[i];
-
-            // project guidance force onto the vector defined by the device position and its projection;
-            // this removes all unwanted force components (e.g. viscosity along the "free" direction)
-            project_force_on_direction (g, p, s, f);
-        }
-
-        // otherwise, apply a null force
-        else f[0] = f[1] = f[2] = 0.0;
-
-        //除了限定直线方向的力之外，还需要增加直线方向的力 additionalForce
-        f[0] = f[0] + additionalForce[0];
-        f[1] = f[1] + additionalForce[1];
-        f[2] = f[2] + additionalForce[2];
-
-        // apply force
-        if (dhdSetForceAndTorqueAndGripperForce (f[0], f[1], f[2], 0.0, 0.0, 0.0, 0.0) < DHD_NO_ERROR) {
-            printf ("error: cannot set force (%s)\n", dhdErrorGetLastStr());
-            m_done = true;
-        }
-
-        // user interface
-        t1 = dhdGetTime ();
-        if ((t1-t0) > REFRESH_INTERVAL) {
-
-            bool button   = false;
-            bool setPoint = false;
-
-            // check for user input (button and keyboard)
-            if (dhdGetButton (0) == DHD_ON) button   = true;
-            if (oldButton && !button)       setPoint = true;
-            oldButton = button;
-            if (dhdKbHit()) {
-                switch (dhdKbGet()) {
-                case 'q': m_done     = true;     break;
-                case 'p': setPoint   = true;  break;
-                case 'c': pointCount = 0;     break;
-                }
-            }
-
-            // define point if requested
-            if (pointCount < 2 && setPoint) {
-                point[pointCount][0] = p[0];
-                point[pointCount][1] = p[1];
-                point[pointCount][2] = p[2];
-                pointCount++;
-            }
-
-            // display instructions
-            if (pointCount == 0) printf ("Please define first segment point  \r");
-            if (pointCount == 1) printf ("Please define second segment point \r");
-            if (pointCount >= 2){
-                //printf ("Press 'c' clear                    \r");
-                //刚开始定义两个点的线段，之后以这条线段为单轴进行运动
-                //在选定的线段上，按照此方向增加0.5N的力
-                project_force_on_direction(pushForce, point[0], point[1], additionalForce);
-//                qDebug()<<"additionalForce "<<additionalForce[0]<<additionalForce[1]<<additionalForce[2];
-            }
-
-            // update timestamp
-            t0 = t1;
-        }
-    }
-
-    // close the connection
-    dhdClose ();
-
-    // happily exit
-    printf ("done.                              \n");
-    return;
-
-/*
-//    startFollowControlButton->setDisabled(false);
+    startFollowControlButton->setDisabled(false);
     m_done = false;
     double px, py, pz;
     double fx, fy, fz;
     double t1,t0  = dhdGetTime ();
     // open the first available device
     if (!m_omegaFunc->drdOpenOmega()) {
-      dhdSleep (2.0);
+      dhdSleep (0.1);
+      this->gravityButton->setDisabled(false);
+      this->gravityButton->setText("gravity");
+      startFollowControlButton->setDisabled(true);
+      m_done = true;
       return;
     }
-    if(!m_omegaFunc->omegaDrdIsSupport()) return;
-    if(!m_omegaFunc->omegaDrdAutoInit()) return;
-    else if(!m_omegaFunc->omegaDrdStart()) return;
+    if(!m_omegaFunc->omegaDrdIsSupport()){
+        this->gravityButton->setDisabled(false);
+        this->gravityButton->setText("gravity");
+        startFollowControlButton->setDisabled(true);
+        m_done = true;
+        return;
+    }
+    if(!m_omegaFunc->omegaDrdAutoInit()){
+        this->gravityButton->setDisabled(false);
+        this->gravityButton->setText("gravity");
+        startFollowControlButton->setDisabled(true);
+        m_done = true;
+        return;
+    }
+    else if(!m_omegaFunc->omegaDrdStart()){
+        this->gravityButton->setDisabled(false);
+        this->gravityButton->setText("gravity");
+        startFollowControlButton->setDisabled(true);
+        m_done = true;
+        return;
+    }
     double nullPos[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     m_omegaFunc->omegaDrdMoveTo(nullPos);
     m_omegaFunc->omegaDrdStop(true);
     // haptic loop
     while (!m_done) {
       // apply zero force
-      if (m_omegaFunc->omegaDrdSetForceAndTorqueAndGripperForce(this->forceSBT, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0) < DHD_NO_ERROR) {
+      if (m_omegaFunc->omegaDrdSetForceAndTorqueAndGripperForce(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0) < DHD_NO_ERROR) {
         printf ("error: cannot set force (%s)\n", dhdErrorGetLastStr());
         m_done = true;
       }
@@ -873,7 +694,6 @@ void MainWindow::setForce(){
       if ((t1-t0) > 0.01) {
         // update timestamp
         t0 = t1;
-        this->forceSBT = forceSensor->getCalForce()/2000.0;
         if(m_isFollow){
             omegaFollow();
         }
@@ -883,27 +703,15 @@ void MainWindow::setForce(){
     m_omegaFunc->drdCloseOmega();
 
     gravityButton->setText("gravity");
+    this->gravityButton->setDisabled(false);
+    this->gravityButton->setText("gravity");
     startFollowControlButton->setDisabled(true);
+    m_done = true;
     // happily exit
     return;
-    */
 }
 
-void MainWindow::startFollowControl(){
-
-    //To do....
-//    while (true) {
-        //this->forceSBT = this->forceSensor->getCalForce();
-//        pushForce[0] = this->forceSBT/2000.0;
-//        pushForce[1] = this->forceSBT/2000.0;
-//        pushForce[2] = this->forceSBT/2000.0;
-
-//    }
-}
-
-//2021.08.04 quanzeng 远端pid位置跟随
-/*
-void MainWindow::omegaFollow1(){
+void MainWindow::omegaFollow(){
     //to do....
     // e = (Xm - Xm0) - K(Xs - Xs0)
     double Kp = 1, Kd = 0.5, K = 10;
@@ -925,6 +733,7 @@ void MainWindow::startFollowControl(){
     if(!m_isFollow){
         bool rnt = maxonMotor1->enable();
         rnt = maxonMotor1->setVelocityMode();
+        qDebug()<<"rnt"<<rnt;
         //quanzeng 2021.07.15 记录当前omega的当前位置
         recordeOmegaPos(&XmPosInit, &YmPosInit, &ZmPosInit);
         XsPosInit = maxonMotor1->getCurrentPosition();
@@ -934,11 +743,30 @@ void MainWindow::startFollowControl(){
     }else{
         maxonMotor1->setQuickStopState();
         maxonMotor1->disable();
-
         startFollowControlButton->setText("Start Follow");
         m_isFollow = false;
     }
 }
-*/
 
+//quanzeng 记录omega的位置 单位mm
+void MainWindow::recordeOmegaPos(double* XmPos, double* YmPos, double* ZmPos){
+    double theta1, theta2, theta3, gPos;
+    if (m_omegaFunc->omegaDrdGetPos(XmPos, YmPos, ZmPos, &theta1, &theta2, &theta3, &gPos) < DHD_NO_ERROR) {
+        m_done = true;
+    }
+    *XmPos = *XmPos*1000;
+    *YmPos = *YmPos*1000;
+    *ZmPos = *ZmPos*1000;
+}
+
+//quanzeng 记录omega的速度 单位mm/s
+void MainWindow::recordeOmegaVel(double* XmSpeed, double* YmSpeed, double* ZmSpeed){
+    double theta1Vel, theta2Vel, theta3Vel, gVel;
+    if (m_omegaFunc->omegaDrdGetVel(XmSpeed, YmSpeed, ZmSpeed, &theta1Vel, &theta2Vel, &theta3Vel, &gVel) < DHD_NO_ERROR) {
+        m_done = true;
+    }
+    *XmSpeed = *XmSpeed*1000;
+    *YmSpeed = *YmSpeed*1000;
+    *ZmSpeed = *ZmSpeed*1000;
+}
 

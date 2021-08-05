@@ -12,7 +12,6 @@
 #include "omega.h"
 #include "omega/OmegaFunction.h"
 #include "ForceSensor/ForceSensor.h"
-#include "functioncustom.h"
 
 class MainWindow : public QMainWindow
 {
@@ -25,9 +24,9 @@ private:
 protected:
     void closeEvent(QCloseEvent *event);
     void setForce();
-    void VelFollow();
     void omegaFollow();
-
+    void recordeOmegaPos(double* XmPos, double* YmPos, double* ZmPos);
+    void recordeOmegaVel(double* XmSpeed, double* YmSpeed, double* ZmSpeed);
 public slots:
     bool enable();
     bool motor1_enable();
@@ -49,8 +48,6 @@ public slots:
     bool motor1_velocitymode_move();
     bool motor1_velocitymode_halt();
     void motor2_profilePoshalt();
-    bool set_motor1_currentMode();
-    bool motor1_currentmode_move();
     bool halt();
     void go_to_pos1();
     void hit_particle();
@@ -98,12 +95,6 @@ private:
     QPushButton* maxon_motor1_positionmode_halt_button;
     QLineEdit* maxon_motor1_profileVelocitymode_setVelocity_text;
     QLabel* maxon_motor1_profileVelocitymode_unit_label;
-    QPushButton* maxon_motor1_currentmode_button;
-    QLabel* maxon_motor1_currentmode_setVelocity_label;
-    QLineEdit* maxon_motor1_currentmode_setVelocity_text;
-    QLabel* maxon_motor1_currentmode_unit_label;
-    QPushButton* maxon_motor1_currentmode_startmove_button;
-
 
     QLabel* maxon_motor2_label;
     QLabel* maxon_motor2_position_label;
@@ -144,8 +135,6 @@ private:
     omega* omega_win;
     OmegaFunction* m_omegaFunc;
     ForceSensor* forceSensor;
-
-    double forceSBT;
 public:
     explicit MainWindow();
     ~MainWindow();

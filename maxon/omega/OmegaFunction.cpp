@@ -58,11 +58,38 @@ bool OmegaFunction::getPosition(double *px, double *py, double *pz){
     return true;
 }
 
+//单位是mm
+bool OmegaFunction::getPositionMilimeter(double* XmPos, double* YmPos, double* ZmPos){
+    double theta1, theta2, theta3, gPos;
+    bool rtn = false;
+    if (this->omegaDrdGetPos(XmPos, YmPos, ZmPos, &theta1, &theta2, &theta3, &gPos) < DHD_NO_ERROR) {
+         rtn = true;
+    }
+    *XmPos = *XmPos*1000;
+    *YmPos = *YmPos*1000;
+    *ZmPos = *ZmPos*1000;
+    return rtn;
+}
+
 bool OmegaFunction::getLinearVelocity(double* px, double* py, double* pz){
     if (dhdGetLinearVelocity(px, py, pz) < DHD_NO_ERROR) {
         return false;
     }
     return true;
+}
+
+//返回的速度是 mm/s
+bool OmegaFunction::getLinearVelocityMilimeter(double* XmSpeed, double* YmSpeed, double* ZmSpeed){
+    double theta1Vel, theta2Vel, theta3Vel, gVel;
+    bool rtn = false;
+    if (this->omegaDrdGetVel(XmSpeed, YmSpeed, ZmSpeed, &theta1Vel, &theta2Vel, &theta3Vel, &gVel) < DHD_NO_ERROR) {
+        rtn = true;
+    }
+    *XmSpeed = *XmSpeed*1000;
+    *YmSpeed = *YmSpeed*1000;
+    *ZmSpeed = *ZmSpeed*1000;
+    return rtn;
+
 }
 
 int OmegaFunction::getButton(){
